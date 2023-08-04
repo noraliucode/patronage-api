@@ -3,11 +3,20 @@ import fs from "fs";
 import bodyParser from "body-parser";
 import jwt from "jsonwebtoken";
 import "dotenv/config";
+import cors from "cors";
 
 const SECRET_KEY = process.env.SECRET_KEY || "";
 
 const app = express();
 app.use(bodyParser.json());
+app.use(
+  cors({
+    origin:
+      "http://localhost:3000" ||
+      "http://localhost:3001" ||
+      "https://patronage.shokunin.network/",
+  })
+);
 
 function readJSONFile(): any[] {
   try {
