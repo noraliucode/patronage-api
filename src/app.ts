@@ -28,9 +28,7 @@ app.get("/data", (req: Request, res: Response) => {
 });
 
 app.post("/data", (req: Request, res: Response) => {
-  const data = readJSONFile();
-  data.push(req.body);
-  writeJSONFile(data);
+  writeJSONFile(req.body);
   res.status(201).send();
 });
 
