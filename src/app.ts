@@ -35,6 +35,6 @@ app.post("/data", (req: Request, res: Response) => {
 });
 
 const port = 3000;
-app.listen(port, () => {
+app.listen(process.env.PORT || port, () => {
   console.log(`Server running on http://localhost:${port}`);
 });
