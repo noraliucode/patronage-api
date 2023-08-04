@@ -6,17 +6,19 @@ import "dotenv/config";
 import cors from "cors";
 
 const SECRET_KEY = process.env.SECRET_KEY || "";
+// const allowList = [
+//   "http://localhost:3000",
+//   "http://localhost:3001",
+//   "https://patronage.shokunin.network/",
+// ];
+// const corsOptions = {
+//   origin: allowList,
+// };
 
 const app = express();
 app.use(bodyParser.json());
-app.use(
-  cors({
-    origin:
-      "http://localhost:3000" ||
-      "http://localhost:3001" ||
-      "https://patronage.shokunin.network/",
-  })
-);
+// app.use(cors(corsOptions));
+app.use(cors());
 
 function readJSONFile(): any[] {
   try {
