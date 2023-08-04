@@ -33,3 +33,8 @@ app.post("/data", (req: Request, res: Response) => {
   writeJSONFile(data);
   res.status(201).send();
 });
+
+const port = 3000;
+app.listen(port, () => {
+  console.log(`Server running on http://localhost:${port}`);
+});
