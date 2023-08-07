@@ -37,14 +37,15 @@ app.get("/data", async (req: Request, res: Response) => {
   }
 });
 
-app.post("/data", async (req: Request, res: Response) => {
-  try {
-    const result = await db.collection("data").insertOne(req.body);
-    res.status(201).json(result);
-  } catch (error) {
-    res.status(500).json({ error: "Could not create new document" });
-  }
-});
+// TODO: comment out this route for now
+// app.post("/data", async (req: Request, res: Response) => {
+//   try {
+//     const result = await db.collection("data").insertOne(req.body);
+//     res.status(201).json(result);
+//   } catch (error) {
+//     res.status(500).json({ error: "Could not create new document" });
+//   }
+// });
 
 app.patch("/data/:id", async (req: Request, res: Response) => {
   const token = req.headers.authorization?.split(" ")[1];
@@ -67,17 +68,18 @@ app.patch("/data/:id", async (req: Request, res: Response) => {
   }
 });
 
-app.get("/data/:id", (req, res) => {
-  if (ObjectId.isValid(req.params.id)) {
-    db.collection("data")
-      .findOne({ _id: new ObjectId(req.params.id) })
-      .then((doc: any) => {
-        res.status(200).json(doc);
-      })
-      .catch((err: any) => {
-        res.status(500).json({ error: "Could not fetch the document" });
-      });
-  } else {
-    res.status(500).json({ error: "Could not fetch the document" });
-  }
-});
+// TODO: comment out this route for now
+// app.get("/data/:id", (req, res) => {
+//   if (ObjectId.isValid(req.params.id)) {
+//     db.collection("data")
+//       .findOne({ _id: new ObjectId(req.params.id) })
+//       .then((doc: any) => {
+//         res.status(200).json(doc);
+//       })
+//       .catch((err: any) => {
+//         res.status(500).json({ error: "Could not fetch the document" });
+//       });
+//   } else {
+//     res.status(500).json({ error: "Could not fetch the document" });
+//   }
+// });
