@@ -37,6 +37,16 @@ app.get("/data", async (req: Request, res: Response) => {
   }
 });
 
+app.get("/announced", async (req: Request, res: Response) => {
+  try {
+    const data = await db.collection("announced").find().toArray();
+
+    res.status(200).json(data);
+  } catch (error) {
+    res.status(500).json({ error });
+  }
+});
+
 // TODO: comment out this route for now
 // app.post("/data", async (req: Request, res: Response) => {
 //   try {
