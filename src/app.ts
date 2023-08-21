@@ -78,6 +78,32 @@ app.patch("/data/:id", async (req: Request, res: Response) => {
   }
 });
 
+app.patch("/announced", async (req: Request, res: Response) => {
+  const token = req.headers.authorization?.split(" ")[1];
+  if (!token) {
+    return res.status(401).json({ error: "No token provided" });
+  }
+  if (!ObjectId.isValid(req.params.id)) {
+    return res.status(400).json({ error: "Invalid ObjectId" });
+  }
+
+  const idsToUpdate = req.body.idsToUpdate.map(
+    (id: string) => new ObjectId(id)
+  );
+
+  try {
+    jwt.verify(token, SECRET_KEY);
+    const filter = { _id: { $in: idsToUpdate } };
+    const update = { $set: { isExecuted: true } };
+
+    const result = await db.collection("announced").updateMany(filter, update);
+
+    res.status(200).json(result);
+  } catch (error) {
+    res.status(500).json({ error });
+  }
+});
+
 // TODO: comment out this route for now
 // app.get("/data/:id", (req, res) => {
 //   if (ObjectId.isValid(req.params.id)) {
