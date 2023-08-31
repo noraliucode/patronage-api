@@ -184,7 +184,7 @@ app.delete("/creators/:id", async (req: Request, res: Response) => {
   }
 });
 
-app.get("/creators", async (req: Request, res: Response) => {
+app.get("/creators/network/:network", async (req: Request, res: Response) => {
   const token = req.headers.authorization?.split(" ")[1];
   if (!token) {
     return res.status(401).json({ error: "No token provided" });
@@ -193,7 +193,11 @@ app.get("/creators", async (req: Request, res: Response) => {
   try {
     jwt.verify(token, SECRET_KEY);
 
-    const creators = await db.collection("creators").find().toArray();
+    const network = req.params.network;
+    const creators = await db
+      .collection("creators")
+      .find({ network })
+      .toArray();
     res.status(200).json(creators);
   } catch (error) {
     res.status(500).json({ error });
