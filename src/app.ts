@@ -200,60 +200,8 @@ app.get("/creators", async (req: Request, res: Response) => {
   }
 });
 
-app.patch("/creators/address/:address", async (req: Request, res: Response) => {
-  const token = req.headers.authorization?.split(" ")[1];
-  if (!token) {
-    return res.status(401).json({ error: "No token provided" });
-  }
-
-  try {
-    jwt.verify(token, SECRET_KEY);
-
-    const address = req.params.address;
-    const creator = await db
-      .collection("creators")
-      .findOne({ address: address });
-
-    if (!creator) {
-      return res.status(404).json({ error: "Creator not found" });
-    }
-
-    const result = await db
-      .collection("creators")
-      .updateOne({ address: address }, { $set: req.body });
-
-    res.status(200).json(result);
-  } catch (error) {
-    res.status(500).json({ error });
-  }
-});
-
-app.get("/creators/address/:address", async (req: Request, res: Response) => {
-  const token = req.headers.authorization?.split(" ")[1];
-  if (!token) {
-    return res.status(401).json({ error: "No token provided" });
-  }
-
-  try {
-    jwt.verify(token, SECRET_KEY);
-
-    const address = req.params.address;
-    const creator = await db
-      .collection("creators")
-      .findOne({ address: address });
-
-    if (!creator) {
-      return res.status(404).json({ error: "Creator not found" });
-    }
-
-    res.status(200).json(creator);
-  } catch (error) {
-    res.status(500).json({ error });
-  }
-});
-
-app.delete(
-  "/creators/address/:address",
+app.patch(
+  "/creators/network/:network/address/:address",
   async (req: Request, res: Response) => {
     const token = req.headers.authorization?.split(" ")[1];
     if (!token) {
@@ -264,9 +212,70 @@ app.delete(
       jwt.verify(token, SECRET_KEY);
 
       const address = req.params.address;
+      const network = req.params.network;
+      const creator = await db
+        .collection("creators")
+        .findOne({ address, network });
+
+      if (!creator) {
+        return res.status(404).json({ error: "Creator not found" });
+      }
+
       const result = await db
         .collection("creators")
-        .deleteOne({ address: address });
+        .updateOne({ address: address }, { $set: req.body });
+
+      res.status(200).json(result);
+    } catch (error) {
+      res.status(500).json({ error });
+    }
+  }
+);
+
+app.get(
+  "/creators/network/:network/address/:address",
+  async (req: Request, res: Response) => {
+    const token = req.headers.authorization?.split(" ")[1];
+    if (!token) {
+      return res.status(401).json({ error: "No token provided" });
+    }
+
+    try {
+      jwt.verify(token, SECRET_KEY);
+
+      const address = req.params.address;
+      const network = req.params.network;
+      const creator = await db
+        .collection("creators")
+        .findOne({ address, network });
+
+      if (!creator) {
+        return res.status(404).json({ error: "Creator not found" });
+      }
+
+      res.status(200).json(creator);
+    } catch (error) {
+      res.status(500).json({ error });
+    }
+  }
+);
+
+app.delete(
+  "/creators/network/:network/address/:address",
+  async (req: Request, res: Response) => {
+    const token = req.headers.authorization?.split(" ")[1];
+    if (!token) {
+      return res.status(401).json({ error: "No token provided" });
+    }
+
+    try {
+      jwt.verify(token, SECRET_KEY);
+
+      const address = req.params.address;
+      const network = req.params.network;
+      const result = await db
+        .collection("creators")
+        .deleteOne({ address, network });
 
       if (result.deletedCount === 0) {
         return res.status(404).json({ error: "Creator not found" });
