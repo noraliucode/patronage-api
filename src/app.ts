@@ -227,7 +227,7 @@ app.patch(
 
       const result = await db
         .collection("creators")
-        .updateOne({ address: address }, { $set: req.body });
+        .updateOne({ address, network }, { $set: req.body });
 
       res.status(200).json(result);
     } catch (error) {
