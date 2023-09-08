@@ -3,6 +3,7 @@ import { getDb, connectToDb } from "./db";
 import { ObjectId } from "mongodb";
 import jwt from "jsonwebtoken";
 import cors from "cors";
+import { ISubscription } from "./types";
 
 const SECRET_KEY = process.env.SECRET_KEY || "";
 const port = process.env.PORT || 3000;
@@ -291,3 +292,118 @@ app.delete(
     }
   }
 );
+
+// add create, update delete subscriptions
+app.post("/subscriptions", async (req: Request, res: Response) => {
+  const token = req.headers.authorization?.split(" ")[1];
+  if (!token) {
+    return res.status(401).json({ error: "No token provided" });
+  }
+
+  const { creator, supporter, pureProxy, expiresOn, subscribedTime } = req.body;
+  if (!creator || !supporter || !pureProxy || !expiresOn) {
+    return res.status(400).json({ error: "Missing fields in request body." });
+  }
+
+  try {
+    jwt.verify(token, SECRET_KEY);
+
+    const newSubscription: ISubscription = {
+      creator,
+      supporter,
+      pureProxy,
+      expiresOn,
+      subscribedTime,
+    };
+    const result = await db
+      .collection("subscriptions")
+      .insertOne(newSubscription);
+
+    res.status(201).json({ result });
+  } catch (error) {
+    res.status(500).json({ error });
+  }
+});
+
+app.put("/subscriptions", async (req: Request, res: Response) => {
+  const token = req.headers.authorization?.split(" ")[1];
+  if (!token) {
+    return res.status(401).json({ error: "No token provided" });
+  }
+
+  const { creator, supporter, pureProxy, expiresOn } = req.body;
+
+  if (!creator || !supporter) {
+    return res.status(400).json({
+      error:
+        "Both creator and supporter fields are required for identifying the subscription to update.",
+    });
+  }
+
+  try {
+    jwt.verify(token, SECRET_KEY);
+
+    const criteria = {
+      creator: creator,
+      supporter: supporter,
+    };
+
+    const updatedSubscription: Partial<ISubscription> = {};
+    if (pureProxy) updatedSubscription.pureProxy = pureProxy;
+    if (expiresOn) updatedSubscription.expiresOn = expiresOn;
+
+    const result = await db
+      .collection("subscriptions")
+      .updateOne(criteria, { $set: updatedSubscription });
+
+    if (result.modifiedCount === 0) {
+      return res
+        .status(404)
+        .json({ error: "Subscription not found or no changes made." });
+    }
+
+    res.status(200).json({ result });
+  } catch (error) {
+    res.status(500).json({ error });
+  }
+});
+
+app.delete("/subscriptions", async (req: Request, res: Response) => {
+  const token = req.headers.authorization?.split(" ")[1];
+  if (!token) {
+    return res.status(401).json({ error: "No token provided" });
+  }
+
+  const { creator, supporter } = req.body;
+  if (!creator && !supporter) {
+    return res.status(400).json({
+      error: "Please provide either a creator or a supporter address.",
+    });
+  }
+
+  try {
+    jwt.verify(token, SECRET_KEY);
+
+    let criteria = {} as any;
+
+    if (creator) {
+      criteria.creator = creator;
+    }
+
+    if (supporter) {
+      criteria.supporter = supporter;
+    }
+
+    const result = await db.collection("subscriptions").deleteMany(criteria);
+
+    if (result.deletedCount === 0) {
+      return res
+        .status(404)
+        .json({ error: "No subscriptions found for the provided addresses." });
+    }
+
+    res.status(200).json({ message: "Subscriptions deleted successfully." });
+  } catch (error) {
+    res.status(500).json({ error });
+  }
+});
