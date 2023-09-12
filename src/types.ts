@@ -4,6 +4,7 @@ export type ISubscription = {
   pureProxy: string;
   expiresOn: number;
   subscribedTime: number;
+  network: string;
 };
 
 export type IUser = {

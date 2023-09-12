@@ -300,8 +300,16 @@ app.post("/subscriptions", async (req: Request, res: Response) => {
     return res.status(401).json({ error: "No token provided" });
   }
 
-  const { creator, supporter, pureProxy, expiresOn, subscribedTime } = req.body;
-  if (!creator || !supporter || !pureProxy || !expiresOn) {
+  const { creator, supporter, pureProxy, expiresOn, subscribedTime, network } =
+    req.body;
+  if (
+    !creator ||
+    !supporter ||
+    !pureProxy ||
+    !expiresOn ||
+    !subscribedTime ||
+    !network
+  ) {
     return res.status(400).json({ error: "Missing fields in request body." });
   }
 
@@ -314,6 +322,7 @@ app.post("/subscriptions", async (req: Request, res: Response) => {
       pureProxy,
       expiresOn,
       subscribedTime,
+      network,
     };
     const result = await db
       .collection("subscriptions")
@@ -324,6 +333,32 @@ app.post("/subscriptions", async (req: Request, res: Response) => {
     res.status(500).json({ error });
   }
 });
+
+app.get(
+  "/subscriptions/network/:network/creator/:creator/supporter/:supporter",
+  async (req: Request, res: Response) => {
+    const network = req.params.network;
+    const creator = req.params.creator;
+    const supporter = req.params.supporter;
+    if (!network || !creator || !supporter) {
+      return res.status(400).json({ error: "Missing address in request." });
+    }
+
+    try {
+      const user = await db
+        .collection("subscriptions")
+        .findOne({ network, creator, supporter });
+
+      if (!user) {
+        return res.status(404).json({ error: "subscription not found." });
+      }
+
+      res.status(200).json(user);
+    } catch (error) {
+      res.status(500).json({ error });
+    }
+  }
+);
 
 app.put("/subscriptions", async (req: Request, res: Response) => {
   const token = req.headers.authorization?.split(" ")[1];
