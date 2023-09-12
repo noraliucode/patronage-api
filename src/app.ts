@@ -407,3 +407,43 @@ app.delete("/subscriptions", async (req: Request, res: Response) => {
     res.status(500).json({ error });
   }
 });
+
+// add create and read users
+app.post("/users", async (req: Request, res: Response) => {
+  const { address, network, pubKey } = req.body;
+  if (!address || !network || !pubKey) {
+    return res.status(400).json({ error: "Missing fields in request body." });
+  }
+
+  try {
+    const newUser = req.body;
+    const result = await db.collection("users").insertOne(newUser);
+
+    res.status(201).json({ result });
+  } catch (error) {
+    res.status(500).json({ error });
+  }
+});
+
+app.get(
+  "/users/network/:network/address/:address",
+  async (req: Request, res: Response) => {
+    const address = req.params.address;
+    const network = req.params.network;
+    if (!address || !network) {
+      return res.status(400).json({ error: "Missing address in request." });
+    }
+
+    try {
+      const user = await db.collection("users").findOne({ address, network });
+
+      if (!user) {
+        return res.status(404).json({ error: "User not found." });
+      }
+
+      res.status(200).json(user);
+    } catch (error) {
+      res.status(500).json({ error });
+    }
+  }
+);
