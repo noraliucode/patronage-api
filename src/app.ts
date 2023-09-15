@@ -473,7 +473,7 @@ app.get(
       const user = await db.collection("users").findOne({ address, network });
 
       if (!user) {
-        return res.status(404).json({ error: "User not found." });
+        return null;
       }
 
       res.status(200).json(user);
