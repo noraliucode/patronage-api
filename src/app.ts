@@ -470,10 +470,10 @@ app.get(
     }
 
     try {
-      const user = await db.collection("users").findOne({ address, network });
+      let user = await db.collection("users").findOne({ address, network });
 
       if (!user) {
-        return null;
+        user = null;
       }
 
       res.status(200).json(user);
