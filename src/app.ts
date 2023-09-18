@@ -345,15 +345,15 @@ app.get(
     }
 
     try {
-      const user = await db
+      let subscription = await db
         .collection("subscriptions")
         .findOne({ network, creator, supporter });
 
-      if (!user) {
-        return res.status(404).json({ error: "subscription not found." });
+      if (!subscription) {
+        subscription = null;
       }
 
-      res.status(200).json(user);
+      res.status(200).json(subscription);
     } catch (error) {
       res.status(500).json({ error });
     }
