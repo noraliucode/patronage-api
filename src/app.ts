@@ -360,6 +360,31 @@ app.get(
   }
 );
 
+app.get(
+  "/subscriptions/network/:network/supporter/:supporter",
+  async (req: Request, res: Response) => {
+    const network = req.params.network;
+    const supporter = req.params.supporter;
+
+    if (!network || !supporter) {
+      return res
+        .status(400)
+        .json({ error: "Missing network or supporter in request." });
+    }
+
+    try {
+      const subscriptions = await db
+        .collection("subscriptions")
+        .find({ network, supporter })
+        .toArray();
+
+      res.status(200).json(subscriptions);
+    } catch (error) {
+      res.status(500).json({ error });
+    }
+  }
+);
+
 app.put("/subscriptions", async (req: Request, res: Response) => {
   const token = req.headers.authorization?.split(" ")[1];
   if (!token) {
