@@ -3,7 +3,7 @@ import { getDb, connectToDb } from "./db";
 import { ObjectId } from "mongodb";
 import jwt from "jsonwebtoken";
 import cors from "cors";
-import { ISubscription } from "./types";
+import { ICreator, ISubscription } from "./types";
 
 const SECRET_KEY = process.env.SECRET_KEY || "";
 const port = process.env.PORT || 3000;
@@ -378,7 +378,40 @@ app.get(
         .find({ network, supporter })
         .toArray();
 
-      res.status(200).json(subscriptions);
+      // Extract unique creator addresses from the subscriptions
+      const creatorAddresses = [
+        ...new Set(subscriptions.map((sub: ISubscription) => sub.creator)),
+      ];
+
+      // Fetch all creators in one go
+      const creators = await db
+        .collection("creators")
+        .find({ address: { $in: creatorAddresses }, network })
+        .toArray();
+
+      // Map creators by their address for easier access
+      const creatorsMap: Record<string, ICreator> = creators.reduce(
+        (acc: Record<string, ICreator>, creator: ICreator) => {
+          acc[creator.address] = creator;
+          return acc;
+        },
+        {}
+      );
+
+      // Map subscriptions to desired structure
+      const transformedSubscriptions = subscriptions.map(
+        (subscription: ISubscription) => {
+          const creatorDoc = creatorsMap[subscription.creator];
+          return {
+            address: subscription.creator,
+            display: creatorDoc?.identity?.display || "Unknown Creator",
+            imgUrl: creatorDoc?.additionalInfo?.imgUrl || null,
+            network: subscription.network,
+          };
+        }
+      );
+
+      res.status(200).json(transformedSubscriptions);
     } catch (error) {
       res.status(500).json({ error });
     }
