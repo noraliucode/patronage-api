@@ -205,6 +205,34 @@ app.get("/creators/network/:network", async (req: Request, res: Response) => {
   }
 });
 
+app.get(
+  "/creators/network/:network/address/:address",
+  async (req: Request, res: Response) => {
+    const token = req.headers.authorization?.split(" ")[1];
+    if (!token) {
+      return res.status(401).json({ error: "No token provided" });
+    }
+
+    try {
+      jwt.verify(token, SECRET_KEY);
+
+      const network = req.params.network;
+      const address = req.params.address;
+
+      const creator = await db
+        .collection("creators")
+        .findOne({ network, address });
+
+      res.status(200).json(creator);
+    } catch (error) {
+      if (error instanceof jwt.JsonWebTokenError) {
+        return res.status(401).json({ error: "Invalid token" });
+      }
+      res.status(500).json({ error });
+    }
+  }
+);
+
 app.patch(
   "/creators/network/:network/address/:address",
   async (req: Request, res: Response) => {
