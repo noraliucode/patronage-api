@@ -5,6 +5,7 @@ export type ISubscription = {
   expiresOn: number;
   subscribedTime: number;
   network: string;
+  isCommitted: boolean;
 };
 
 export type IUser = {

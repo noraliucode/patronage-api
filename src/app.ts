@@ -296,15 +296,23 @@ app.post("/subscriptions", async (req: Request, res: Response) => {
     return res.status(401).json({ error: "No token provided" });
   }
 
-  const { creator, supporter, pureProxy, expiresOn, subscribedTime, network } =
-    req.body;
+  const {
+    creator,
+    supporter,
+    pureProxy,
+    expiresOn,
+    subscribedTime,
+    network,
+    isCommitted,
+  } = req.body;
   if (
     !creator ||
     !supporter ||
     !pureProxy ||
     !expiresOn ||
     !subscribedTime ||
-    !network
+    !network ||
+    !isCommitted
   ) {
     return res.status(400).json({ error: "Missing fields in request body." });
   }
@@ -319,6 +327,7 @@ app.post("/subscriptions", async (req: Request, res: Response) => {
       expiresOn,
       subscribedTime,
       network,
+      isCommitted,
     };
     const result = await db
       .collection("subscriptions")
@@ -399,10 +408,9 @@ app.get(
         (subscription: ISubscription) => {
           const creatorDoc = creatorsMap[subscription.creator];
           return {
-            address: subscription.creator,
+            ...subscription,
             display: creatorDoc?.identity?.display || "Unknown Creator",
             imgUrl: creatorDoc?.additionalInfo?.imgUrl || null,
-            network: subscription.network,
           };
         }
       );
