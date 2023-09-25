@@ -471,25 +471,21 @@ app.delete("/subscriptions", async (req: Request, res: Response) => {
     return res.status(401).json({ error: "No token provided" });
   }
 
-  const { creator, supporter } = req.body;
-  if (!creator && !supporter) {
+  const { creator, supporter, network } = req.body;
+  if (!creator || !supporter || !network) {
     return res.status(400).json({
-      error: "Please provide either a creator or a supporter address.",
+      error: "Please provide creator, supporter and network to delete.",
     });
   }
 
   try {
     jwt.verify(token, SECRET_KEY);
 
-    let criteria = {} as any;
-
-    if (creator) {
-      criteria.creator = creator;
-    }
-
-    if (supporter) {
-      criteria.supporter = supporter;
-    }
+    let criteria = {
+      creator,
+      supporter,
+      network,
+    } as any;
 
     const result = await db.collection("subscriptions").deleteMany(criteria);
 
