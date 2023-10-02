@@ -31,8 +31,12 @@ initServer();
 
 const verifySignature = (signature: string, address: string) => {
   const message = process.env.MESSAGE_TO_SIGN || "";
-  const { isValid } = signatureVerify(message, signature, address);
-  return isValid;
+  try {
+    const { isValid } = signatureVerify(message, signature, address);
+    return isValid;
+  } catch (error) {
+    console.log("verifySignature error", error);
+  }
 };
 
 app.get("/data", async (req: Request, res: Response) => {
