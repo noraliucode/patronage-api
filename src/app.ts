@@ -4,6 +4,7 @@ import { ObjectId } from "mongodb";
 import jwt from "jsonwebtoken";
 import cors from "cors";
 import { ICreator, ISubscription } from "./types";
+import { signatureVerify } from "@polkadot/util-crypto";
 
 const SECRET_KEY = process.env.SECRET_KEY || "";
 const port = process.env.PORT || 3000;
@@ -27,6 +28,15 @@ const initServer = async () => {
 };
 
 initServer();
+
+const verifySignature = (
+  message: string,
+  signature: string,
+  address: string
+) => {
+  const { isValid } = signatureVerify(message, signature, address);
+  return isValid;
+};
 
 app.get("/data", async (req: Request, res: Response) => {
   try {
@@ -147,6 +157,12 @@ app.post("/creators", async (req: Request, res: Response) => {
     return res.status(401).json({ error: "No token provided" });
   }
 
+  const { address, signature } = req.params;
+  const message = JSON.stringify(req.body);
+  if (!verifySignature(message, signature, address)) {
+    return res.status(400).json({ error: "Signature verification failed" });
+  }
+
   try {
     jwt.verify(token, SECRET_KEY);
 
@@ -166,6 +182,12 @@ app.delete("/creators/:id", async (req: Request, res: Response) => {
   }
   if (!ObjectId.isValid(req.params.id)) {
     return res.status(400).json({ error: "Invalid ObjectId" });
+  }
+
+  const { address, signature } = req.params;
+  const message = JSON.stringify(req.body);
+  if (!verifySignature(message, signature, address)) {
+    return res.status(400).json({ error: "Signature verification failed" });
   }
 
   try {
@@ -216,8 +238,14 @@ app.patch(
     try {
       jwt.verify(token, SECRET_KEY);
 
-      const address = req.params.address;
-      const network = req.params.network;
+      const { address, network } = req.params;
+
+      const { signature } = req.body;
+      const message = JSON.stringify(req.body);
+      if (!verifySignature(message, signature, address)) {
+        return res.status(400).json({ error: "Signature verification failed" });
+      }
+
       const creator = await db
         .collection("creators")
         .findOne({ address, network });
@@ -294,6 +322,12 @@ app.post("/subscriptions", async (req: Request, res: Response) => {
   const token = req.headers.authorization?.split(" ")[1];
   if (!token) {
     return res.status(401).json({ error: "No token provided" });
+  }
+
+  const { address, signature } = req.params;
+  const message = JSON.stringify(req.body);
+  if (!verifySignature(message, signature, address)) {
+    return res.status(400).json({ error: "Signature verification failed" });
   }
 
   const {
@@ -430,6 +464,12 @@ app.put("/subscriptions", async (req: Request, res: Response) => {
 
   const { creator, supporter, pureProxy, expiresOn } = req.body;
 
+  const { address, signature } = req.body;
+  const message = JSON.stringify(req.body);
+  if (!verifySignature(message, signature, address)) {
+    return res.status(400).json({ error: "Signature verification failed" });
+  }
+
   if (!creator || !supporter) {
     return res.status(400).json({
       error:
@@ -478,6 +518,12 @@ app.delete("/subscriptions", async (req: Request, res: Response) => {
     });
   }
 
+  const { address, signature } = req.body;
+  const message = JSON.stringify(req.body);
+  if (!verifySignature(message, signature, address)) {
+    return res.status(400).json({ error: "Signature verification failed" });
+  }
+
   try {
     jwt.verify(token, SECRET_KEY);
 
@@ -506,6 +552,12 @@ app.post("/users", async (req: Request, res: Response) => {
   const { address, network, pubKey } = req.body;
   if (!address || !network || !pubKey) {
     return res.status(400).json({ error: "Missing fields in request body." });
+  }
+
+  const { signature } = req.body;
+  const message = JSON.stringify(req.body);
+  if (!verifySignature(message, signature, address)) {
+    return res.status(400).json({ error: "Signature verification failed" });
   }
 
   try {
