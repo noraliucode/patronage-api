@@ -322,7 +322,7 @@ app.post("/subscriptions", async (req: Request, res: Response) => {
     return res.status(401).json({ error: "No token provided" });
   }
 
-  const { address, signature } = req.params;
+  const { address, signature } = req.body;
   if (!verifySignature(signature, address)) {
     return res.status(400).json({ error: "Signature verification failed" });
   }
