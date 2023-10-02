@@ -29,11 +29,8 @@ const initServer = async () => {
 
 initServer();
 
-const verifySignature = (
-  message: string,
-  signature: string,
-  address: string
-) => {
+const verifySignature = (signature: string, address: string) => {
+  const message = process.env.MESSAGE_TO_SIGN || "";
   const { isValid } = signatureVerify(message, signature, address);
   return isValid;
 };
@@ -158,8 +155,7 @@ app.post("/creators", async (req: Request, res: Response) => {
   }
 
   const { address, signature } = req.params;
-  const message = JSON.stringify(req.body);
-  if (!verifySignature(message, signature, address)) {
+  if (!verifySignature(signature, address)) {
     return res.status(400).json({ error: "Signature verification failed" });
   }
 
@@ -185,8 +181,7 @@ app.delete("/creators/:id", async (req: Request, res: Response) => {
   }
 
   const { address, signature } = req.params;
-  const message = JSON.stringify(req.body);
-  if (!verifySignature(message, signature, address)) {
+  if (!verifySignature(signature, address)) {
     return res.status(400).json({ error: "Signature verification failed" });
   }
 
@@ -241,8 +236,7 @@ app.patch(
       const { address, network } = req.params;
 
       const { signature } = req.body;
-      const message = JSON.stringify(req.body);
-      if (!verifySignature(message, signature, address)) {
+      if (!verifySignature(signature, address)) {
         return res.status(400).json({ error: "Signature verification failed" });
       }
 
@@ -325,8 +319,7 @@ app.post("/subscriptions", async (req: Request, res: Response) => {
   }
 
   const { address, signature } = req.params;
-  const message = JSON.stringify(req.body);
-  if (!verifySignature(message, signature, address)) {
+  if (!verifySignature(signature, address)) {
     return res.status(400).json({ error: "Signature verification failed" });
   }
 
@@ -465,8 +458,7 @@ app.put("/subscriptions", async (req: Request, res: Response) => {
   const { creator, supporter, pureProxy, expiresOn } = req.body;
 
   const { address, signature } = req.body;
-  const message = JSON.stringify(req.body);
-  if (!verifySignature(message, signature, address)) {
+  if (!verifySignature(signature, address)) {
     return res.status(400).json({ error: "Signature verification failed" });
   }
 
@@ -519,8 +511,7 @@ app.delete("/subscriptions", async (req: Request, res: Response) => {
   }
 
   const { address, signature } = req.body;
-  const message = JSON.stringify(req.body);
-  if (!verifySignature(message, signature, address)) {
+  if (!verifySignature(signature, address)) {
     return res.status(400).json({ error: "Signature verification failed" });
   }
 
@@ -555,8 +546,7 @@ app.post("/users", async (req: Request, res: Response) => {
   }
 
   const { signature } = req.body;
-  const message = JSON.stringify(req.body);
-  if (!verifySignature(message, signature, address)) {
+  if (!verifySignature(signature, address)) {
     return res.status(400).json({ error: "Signature verification failed" });
   }
 
